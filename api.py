@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, SessionLocal, Base
 from sqlalchemy.orm import Session
+from models import Users, Items
 
 from dotenv import load_dotenv
 load_dotenv()
