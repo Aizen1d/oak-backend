@@ -14,6 +14,7 @@ from dependencies.auth import Token
 from dependencies.auth import User
 from dependencies.auth import ACCESS_TOKEN_EXPIRE_MINUTES
 from dependencies.auth import authenticate_user
+from dependencies.auth import get_current_user
 from dependencies.auth import create_access_token
 from dependencies.auth import hash_password
 from dependencies.database import get_db
@@ -42,7 +43,7 @@ def register_user(data: User, db: Session = Depends(get_db)):
     db.close()
 
 @auth.post("/login")
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> Token:
+async def login_for_access_token(form_data: User) -> Token:
   user_data = User(username=form_data.username, password=form_data.password)
   user = authenticate_user(user_data) 
 
@@ -58,4 +59,11 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
       data={"sub": user.Username}, expires_delta=access_token_expires
   )
 
-  return Token(access_token=access_token, token_type="bearer")
+  return {
+      "access_token": access_token,
+      "token_type": "bearer",
+  }
+
+@auth.get("/users/me")
+async def read_users_me(current_user: User = Depends(get_current_user)):
+  return current_user.to_dict()

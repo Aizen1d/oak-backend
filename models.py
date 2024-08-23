@@ -10,6 +10,12 @@ class Users(Base):
     Username = Column(String, unique=True)
     Password = Column(String)
 
+    def to_dict(self):
+        return {
+            "UserId": self.UserId,
+            "Username": self.Username,
+        }
+
 class Items(Base):
     __tablename__ = "Items"
     
