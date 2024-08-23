@@ -1,14 +1,14 @@
 from fastapi import FastAPI
-from fastapi import APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, SessionLocal, Base
-from sqlalchemy.orm import Session
+from database import engine, Base
 from models import Users, Items
+from routers.auth import auth
+from routers.items import items
 
 from dotenv import load_dotenv
 load_dotenv()
 
-import os 
+import os
 
 app = FastAPI()
 
@@ -50,33 +50,6 @@ def create_tables():
     Base.metadata.create_all(bind=engine)
 
 create_tables()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-#################################################################
-""" Routers """
-auth = APIRouter(
-    prefix="/api/v1/auth",
-    tags=["auth"],
-)
-
-items = APIRouter(
-    prefix="/api/v1/items",
-    tags=["items"],
-)
-
-
-#################################################################
-""" API Endpoints """
-
-# Auth API
-
-# Items API
 
 app.include_router(auth)
 app.include_router(items)
