@@ -31,6 +31,9 @@ class Token(BaseModel):
   access_token: str
   token_type: str
 
+class VerifyToken(BaseModel):
+  token: str
+
 class TokenData(BaseModel):
   username: str | None = None
 
@@ -72,6 +75,13 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
   encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=ALGORITHM)
   return encoded_jwt
 
+def verify_token(token: str):
+  try:
+    payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
+    
+    return payload
+  except InvalidTokenError:
+    return None
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
   credentials_exception = HTTPException(

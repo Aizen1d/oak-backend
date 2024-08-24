@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
@@ -11,10 +11,12 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 
 from dependencies.auth import Token
+from dependencies.auth import VerifyToken
 from dependencies.auth import User
 from dependencies.auth import ACCESS_TOKEN_EXPIRE_MINUTES
 from dependencies.auth import authenticate_user
 from dependencies.auth import get_current_user
+from dependencies.auth import verify_token
 from dependencies.auth import create_access_token
 from dependencies.auth import hash_password
 from dependencies.database import get_db
@@ -42,28 +44,47 @@ def register_user(data: User, db: Session = Depends(get_db)):
   finally:
     db.close()
 
-@auth.post("/login")
-async def login_for_access_token(form_data: User) -> Token:
+@auth.post("/login", tags=["auth"])
+async def login_for_access_token(form_data: User, response: Response):
   user_data = User(username=form_data.username, password=form_data.password)
   user = authenticate_user(user_data) 
 
   if not user:
-      raise HTTPException(
-          status_code=status.HTTP_401_UNAUTHORIZED,
-          detail="Incorrect username or password",
-          headers={"WWW-Authenticate": "Bearer"},
-      )
+    return JSONResponse(content={'status': 'error', 'message': 'Invalid username or password'}, status_code=401)
   
   access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
   access_token = create_access_token(
       data={"sub": user.Username}, expires_delta=access_token_expires
   )
 
-  return {
-      "access_token": access_token,
-      "token_type": "bearer",
-  }
+  # return a httpOnly cookie with the access token
+  response.set_cookie(key="access_token", 
+                      value=access_token,
+                      samesite="none", 
+                      secure=True, 
+                      httponly=True, 
+                      expires=9999999999,
+                      max_age=9999999999
+                      )
 
-@auth.get("/users/me")
+  return {"status": "success", "message": "Login successful"}
+
+@auth.post("/logout", tags=["auth"])
+def logout(response: Response):
+  response.delete_cookie("access_token")
+  return {"status": "success", "message": "Logout successful"}
+
+@auth.post("/token-verify", tags=["auth"])
+def verify_token_received(data: VerifyToken):
+  try:
+    payload = verify_token(data.token)
+    if payload:
+      return JSONResponse(content={'status': 'success', 'message': 'Token is valid'}, status_code=200)
+    else:
+      return JSONResponse(content={'status': 'error', 'message': 'Token is invalid or expired'}, status_code=401)
+  except InvalidTokenError:
+    return JSONResponse(content={'status': 'error', 'message': 'Token is invalid or expired'}, status_code=401)
+
+@auth.get("/users/me", tags=["auth"])
 async def read_users_me(current_user: User = Depends(get_current_user)):
   return current_user.to_dict()
