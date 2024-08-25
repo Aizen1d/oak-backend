@@ -60,12 +60,12 @@ async def login_for_access_token(form_data: User, response: Response):
   # return a httpOnly cookie with the access token
   response.set_cookie(key="access_token", 
                       value=access_token,
+                      domain=".oak-frontend1.vercel.app",
                       samesite="none", 
                       secure=True, 
                       httponly=True, 
                       expires=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60,
                       max_age=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60,
-                      domain="oak-frontend1.vercel.app" 
                       )
 
   return {"status": "success", "message": "Login successful", "data": {"access_token": access_token}}
