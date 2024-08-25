@@ -28,11 +28,11 @@ auth = APIRouter(
     tags=["auth"],
 )
 
-@auth.post("/register", tags=["auth"])
-def register_user(data: User, db: Session = Depends(get_db)):
+@auth.post("/signup", tags=["auth"])
+def signup_user(data: User, db: Session = Depends(get_db)):
   try:
     if db.query(Users).filter(Users.Username == data.username).first():
-        return JSONResponse(status_code=400, content={"message": "User already exists."})
+        return JSONResponse(status_code=200, content={"reason": "existing", "message": "User already exists."})
     
     new_user = Users(Username=data.username, Password=hash_password(data.password))
     db.add(new_user)
@@ -63,8 +63,8 @@ async def login_for_access_token(form_data: User, response: Response):
                       samesite="none", 
                       secure=True, 
                       httponly=True, 
-                      expires=9999999999,
-                      max_age=9999999999
+                      expires=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60,
+                      max_age=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60
                       )
 
   return {"status": "success", "message": "Login successful"}
