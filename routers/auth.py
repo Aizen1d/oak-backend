@@ -65,7 +65,6 @@ async def login_for_access_token(form_data: User, response: Response):
                       httponly=True, 
                       expires=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60,
                       max_age=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60,
-                      domain="oakfrontend-6fkfw.ondigitalocean.app"
                       )
 
   return {"status": "success", "message": "Login successful", "data": {"access_token": access_token}}
