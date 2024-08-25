@@ -19,8 +19,17 @@ class Users(Base):
 class Items(Base):
     __tablename__ = "Items"
     
-    ItemId = Column(Integer, primary_key=True)
+    ItemId = Column(Integer, primary_key=True, autoincrement=True)
     UserId = Column(Integer, ForeignKey("Users.UserId"))
     Name = Column(String)
     Description = Column(Text)
     Price = Column(Float)
+
+    def to_dict(self):
+        return {
+            "ItemId": self.ItemId,
+            "UserId": self.UserId,
+            "Name": self.Name,
+            "Description": self.Description,
+            "Price": self.Price,
+        }
