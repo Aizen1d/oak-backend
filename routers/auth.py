@@ -67,7 +67,7 @@ async def login_for_access_token(form_data: User, response: Response):
                       max_age=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60
                       )
 
-  return {"status": "success", "message": "Login successful"}
+  return {"status": "success", "message": "Login successful", "data": {"access_token": access_token}}
 
 @auth.post("/logout", tags=["auth"])
 def logout(response: Response):
