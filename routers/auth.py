@@ -60,7 +60,7 @@ async def login_for_access_token(form_data: User, response: Response):
   # return a httpOnly cookie with the access token
   response.set_cookie(key="access_token", 
                       value=access_token,
-                      samesite="none", 
+                      samesite="lax", 
                       secure=True, 
                       httponly=True, 
                       expires=int(ACCESS_TOKEN_EXPIRE_MINUTES) * 60,
